@@ -17,7 +17,7 @@ public class SevenSegmentScanner {
 	private final Pattern ILLEGAL_CHAR_PATTERN = Pattern.compile("[^ |_]");
 	private final String ILLEGAL_NUM = "ILL";
 	private final String ERROR_NUM = "ERR";
-	private final String AMBIGOUS_NUM = "AMB";
+	private final String AMBIGUOUS_NUM = "AMB";
 	
 	private final SevenSegmentFSM ssfsm;
 	private final FSMBuilder dsmBuilder;
@@ -121,7 +121,7 @@ public class SevenSegmentScanner {
 	
 	private String formatAmbigiousMessage(String accNum, List<String> altNumbers) {
 		StringBuilder sb = new StringBuilder(accNum);
-		sb.append(" ").append(AMBIGOUS_NUM).append(" [");
+		sb.append(" ").append(AMBIGUOUS_NUM).append(" [");
 		altNumbers.forEach(n -> sb.append("'").append(n).append("', "));
 		sb.delete(sb.length() - 2, sb.length());
 		sb.append("]");
