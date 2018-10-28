@@ -11,15 +11,15 @@ Any variance or errors in input format will result in errors and application wil
 
 The application is developed in Java 8. Gradle is used for building, packaging and running tests.   
 
-##Prerequisites
+## Prerequisites
 
 * Java 8 or above installed and configured.
 
-##Setup
+## Setup
 
 * Clone the application.
 
-##Building
+## Building
 
 On unix environment - <br>
 `.\gradlew build`
@@ -29,7 +29,7 @@ On windows environment - <br>
 
 This will build and jar the application. The jar file _ocr-demo.jar_ is created at `build/libs/` folder. This command will also run unit tests. The test results can be found by browsing `build/reports/tests/test/index.html`
 
-##Run the application
+## Run the application
 
 `java -jar <path to ocr-demo.jar> <path to input file> [options]`
 
@@ -38,7 +38,7 @@ where options can be -
 * `-detailed` - to print details, account numbers along with any error status
 * `-fix` - will try to fix scan errors
 
-###Example usage
+## Example usage
  * For User Story 1 <br>
  `java -jar build/libs/ocr-demo.jar src/test/resources/user_story1.txt`
  
