@@ -45,6 +45,8 @@ public class OcrDemo {
 		List<ScanResult> results = new ArrayList<>();
 		String line1 = null;
 		int lineNumber = 1;
+		boolean needVerification = options.contains("-verify");
+		boolean shouldAttemptFix = options.contains("-fix");
 		try {
 			while ((line1 = reader.readLine()) != null) {
 				String line2 = reader.readLine();
@@ -53,7 +55,7 @@ public class OcrDemo {
 				reader.readLine();
 				List<String> lines = Arrays.asList(line1, line2, line3);
 				verifyLines(lineNumber, lines);
-				results.add(scanner.scanLines(lines, options.contains("-verify"), options.contains("-fix")));
+				results.add(scanner.scanLines(lines, needVerification, shouldAttemptFix));
 				lineNumber += 4;
 			}
 		}
@@ -88,6 +90,7 @@ public class OcrDemo {
 		System.out.println(" where options can be - ");
 		System.out.println(" -verify - to verify scanned account numbers with checksum");
 		System.out.println(" -detailed - to print details, account number with any error status");
+		System.out.println(" -fix - will try to fix sacn errors");
 	}
 
 	public static void main(String[] args) {
