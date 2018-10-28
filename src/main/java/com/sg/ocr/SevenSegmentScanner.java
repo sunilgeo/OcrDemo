@@ -62,7 +62,9 @@ public class SevenSegmentScanner {
 		return scanResult;
     }
 	
-	
+	/*
+	 * Create alternate result by trying to fix error number. 
+	 */
 	ScanResult tryFixingForErrorDigits(ScanResult scanResult) {
 		String accNum = scanResult.getAccountNumber();
 		List<String> alts = new ArrayList<>();
@@ -73,7 +75,8 @@ public class SevenSegmentScanner {
 		}
 		return checkAndCreateAltResult(scanResult,alts);
 	}
-		
+	
+	
 	private String replaceWithAltDigit(String num, String alt, int pos) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(num.substring(0,pos));
@@ -81,8 +84,11 @@ public class SevenSegmentScanner {
 		sb.append(num.substring(pos + 1));
 		return sb.toString();
 	}
-	
 
+	/*
+	 * Create alternate result by trying to fix illegal digits in account number.
+	 * Nothing is done if more than one illegal digit is found in the number. 
+	 */
 	ScanResult tryFixingForIllegalDigits(ScanResult scanResult) {
 		String accNum = scanResult.getAccountNumber();
 		List<Integer> errorDigits = getErrorDigist(accNum);
@@ -103,6 +109,7 @@ public class SevenSegmentScanner {
 	
 	private ScanResult checkAndCreateAltResult(ScanResult result, List<String> altNumbers) {
 		if(!altNumbers.isEmpty()) {
+			//if more than 1 alternate then don't fix but report it as ambiguous.
 			if(altNumbers.size() > 1) {
 				return new ScanResult(result.getInputLines(), result.getAccountNumber(), 
 						formatAmbigiousMessage(result.getAccountNumber(), altNumbers));
@@ -113,7 +120,8 @@ public class SevenSegmentScanner {
 	}
 	
 	private String formatAmbigiousMessage(String accNum, List<String> altNumbers) {
-		StringBuilder sb = new StringBuilder(accNum).append(" AMB [");
+		StringBuilder sb = new StringBuilder(accNum);
+		sb.append(" ").append(AMBIGOUS_NUM).append(" [");
 		altNumbers.forEach(n -> sb.append("'").append(n).append("', "));
 		sb.delete(sb.length() - 2, sb.length());
 		sb.append("]");
