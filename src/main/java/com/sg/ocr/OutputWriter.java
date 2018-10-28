@@ -23,7 +23,7 @@ public class OutputWriter {
 			} else if(group) {
 				System.out.println(groupOutput(results));
 			} else {
-				simpleOutput(results);
+				System.out.println(simpleOutput(results));
 			}
 		}
 		
