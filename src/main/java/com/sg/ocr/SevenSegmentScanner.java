@@ -27,11 +27,18 @@ public class SevenSegmentScanner {
 	 * Scan full number from the given list of lines.
 	 */
 	public ScanResult scanLines(List<String> lines) {
+		return scanLines(lines,false);
+    }
+	
+	/**
+	 * Scan full number from the given list of lines.
+	 */
+	public ScanResult scanLines(List<String> lines, boolean verify) {
 		StringBuilder sb = new StringBuilder();
 		for(int i =0; i < numberOfDigits;i++) {
 			sb.append(scanDigit(lines, i));
 		}
-    	return generateScanResult(lines, sb.toString());
+    	return generateScanResult(lines, sb.toString(), verify);
     }
 	
 	
@@ -55,10 +62,12 @@ public class SevenSegmentScanner {
 		return segments;
 	}
 	
-	private ScanResult generateScanResult(List<String> lines, String accNum) {
+	private ScanResult generateScanResult(List<String> lines, String accNum, boolean verify) {
 		String errMsg = null;
 		if(accNum.contains("?")) { 
 			errMsg = "ILL";
+		} else if(verify && !checksum(accNum)) {
+			errMsg = "ERR";
 		}
 		return new ScanResult(lines, accNum, errMsg);
 	}

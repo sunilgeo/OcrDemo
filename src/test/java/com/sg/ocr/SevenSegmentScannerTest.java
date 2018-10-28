@@ -2,6 +2,7 @@ package com.sg.ocr;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -33,6 +34,40 @@ public class SevenSegmentScannerTest {
 		SevenSegmentScanner scanner = new SevenSegmentScanner(10);
 		SevenSegmentScanner.ScanResult scanResult = scanner.scanLines(Arrays.asList(line1,line2,line3)); 
 		assertEquals("0123456789",scanResult.getAccountNumber());
+	}
+	
+	@Test
+	public void testScanLines_withValidNumber() throws Exception {
+		String line1 = " _     _  _     _  _  _  _  _ ";
+		String line2 = "| |  | _| _||_||_ |_   ||_||_|";
+		String line3 = "|_|  ||_  _|  | _||_|  ||_| _|";
+		
+		SevenSegmentScanner scanner = new SevenSegmentScanner(10);
+		SevenSegmentScanner.ScanResult scanResult = scanner.scanLines(Arrays.asList(line1,line2,line3), true); 
+		assertNull(scanResult.getErrorMsg());
+	}
+	
+	@Test
+	public void testScanLines_withInValidNumber() throws Exception {
+		String line1 = " _  _     _  _        _  _  _ ";
+		String line2 = "|_ |_ |_| _|  |  ||_| _||_||_ ";
+		String line3 = "|_||_|  | _|  |  |  | _| _| _|";
+		
+		SevenSegmentScanner scanner = new SevenSegmentScanner(10);
+		SevenSegmentScanner.ScanResult scanResult = scanner.scanLines(Arrays.asList(line1,line2,line3), true); 
+		assertEquals("ERR", scanResult.getErrorMsg());
+	}
+	
+	@Test
+	public void testScanLines_withIllegalCharacters() throws Exception {
+		String line1 = " _  _     _  _        _  _  _ ";
+		String line2 = "|_ |_ |_| _|  |  ||_| _||_||_ ";
+		String line3 = "|_||_|  | _|  |  | _| _  _| _|";
+		
+		SevenSegmentScanner scanner = new SevenSegmentScanner(10);
+		SevenSegmentScanner.ScanResult scanResult = scanner.scanLines(Arrays.asList(line1,line2,line3), true); 
+		assertEquals("ILL", scanResult.getErrorMsg());
+		assertEquals("664371??95", scanResult.getAccountNumber());
 	}
 
 

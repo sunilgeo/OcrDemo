@@ -6,6 +6,8 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -28,7 +30,7 @@ public class OcrDemoTest {
 		
 		ByteArrayInputStream in = new ByteArrayInputStream(lines.getBytes());
 		OcrDemo ocrdemo = new OcrDemo();
-		List<ScanResult> results = ocrdemo.scan(new InputStreamReader(in));
+		List<ScanResult> results = ocrdemo.scan(new InputStreamReader(in), Collections.emptySet());
 		assertEquals(2,results.size());
 		assertEquals("123456789", results.get(0).getAccountNumber());
 		assertEquals("012345678", results.get(1).getAccountNumber());
