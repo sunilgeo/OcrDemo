@@ -78,8 +78,19 @@ public class SevenSegmentFSMTest {
 		assertEquals(ssfsm.getIntial(),copy.getIntial());
 		assertEquals(ssfsm.getValue(),copy.getValue());
 		assertEquals(ssfsm.transitionCount(),copy.transitionCount());
-		
-		
 	}	
+
+	@Test
+	public void testNextNonEmptyState() throws Exception {
+		SevenSegmentFSM ssfsm = new SevenSegmentFSM();
+		State initialState = ssfsm.getIntial();
+		State nextState = initialState.addStateTransform('_');
+		nextState = nextState.addStateTransform('|');
+		nextState.addStateTransform('_', new State("Final",true));
+		ssfsm.nextState('_');
+		assertTrue(ssfsm.nextNonEmptyState());
+		ssfsm.nextState('_');
+		assertEquals("Final", ssfsm.getValue());
+	}
 
 }

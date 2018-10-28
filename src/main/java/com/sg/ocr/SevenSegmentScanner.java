@@ -9,13 +9,19 @@ import java.util.stream.Collectors;
 import com.sg.ocr.fsm.FSMBuilder;
 import com.sg.ocr.fsm.SevenSegmentFSM;
 
-
+/*
+ * Scanner class for parsing seven segment digits from lines.
+ */
 public class SevenSegmentScanner {
 	private static final int CHAR_PER_LINE = 3;
-	private final int numberOfDigits;
-	private final Pattern illegalCharPattern = Pattern.compile("[^ |_]");
+	private final Pattern ILLEGAL_CHAR_PATTERN = Pattern.compile("[^ |_]");
+	private final String ILLEGAL_NUM = "ILL";
+	private final String ERROR_NUM = "ERR";
+	private final String AMBIGOUS_NUM = "AMB";
+	
 	private final SevenSegmentFSM ssfsm;
 	private final FSMBuilder dsmBuilder;
+	private final int numberOfDigits;
 	
 	SevenSegmentScanner(int nDigits) {
 		numberOfDigits = nDigits;
@@ -34,14 +40,96 @@ public class SevenSegmentScanner {
 	 * Scan full number from the given list of lines.
 	 */
 	public ScanResult scanLines(List<String> lines, boolean verify) {
+		return scanLines(lines,verify,false);
+    }
+	
+	
+	/**
+	 * Scan full number from the given list of lines.
+	 */
+	public ScanResult scanLines(List<String> lines, boolean verify, boolean fix) {
 		StringBuilder sb = new StringBuilder();
 		for(int i =0; i < numberOfDigits;i++) {
 			sb.append(scanDigit(lines, i));
 		}
-    	return generateScanResult(lines, sb.toString(), verify);
+		ScanResult scanResult = generateScanResult(lines, sb.toString(), verify);
+		if(fix && scanResult.getErrorMsg() != null) {
+			if(scanResult.getErrorMsg().startsWith(ILLEGAL_NUM))
+				scanResult = tryFixingForIllegalDigits(scanResult);
+			else if(scanResult.getErrorMsg().startsWith(ERROR_NUM))
+				scanResult = tryFixingForErrorDigits(scanResult);
+		}
+		return scanResult;
     }
 	
 	
+	ScanResult tryFixingForErrorDigits(ScanResult scanResult) {
+		String accNum = scanResult.getAccountNumber();
+		List<String> alts = new ArrayList<>();
+		for(int i =0; i < numberOfDigits;i++) {
+			final int digitPos = i;
+			alts.addAll(getAlternateDigits(scanResult.getInputLines(), digitPos).stream()
+				.map(alt -> replaceWithAltDigit(accNum,alt,digitPos)).filter(this::checksum).collect(Collectors.toList()));
+		}
+		return checkAndCreateAltResult(scanResult,alts);
+	}
+		
+	private String replaceWithAltDigit(String num, String alt, int pos) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(num.substring(0,pos));
+		sb.append(alt);
+		sb.append(num.substring(pos + 1));
+		return sb.toString();
+	}
+	
+
+	ScanResult tryFixingForIllegalDigits(ScanResult scanResult) {
+		String accNum = scanResult.getAccountNumber();
+		List<Integer> errorDigits = getErrorDigist(accNum);
+		if(errorDigits.size() > 1) {
+			//only one error allowed.
+			return scanResult;
+		}
+		if(errorDigits.size() == 1) {
+			int altPos = errorDigits.get(0);
+			List<String> altDigits = getAlternateDigits(scanResult.getInputLines(), altPos);
+			//create alternate numbers substituting illegal digit.
+			List<String> altNumbers = altDigits.stream().map(alt -> 
+				replaceWithAltDigit(accNum,alt,altPos)).filter(this::checksum).collect(Collectors.toList());
+			return checkAndCreateAltResult(scanResult,altNumbers);
+		}
+		return scanResult;
+	}
+	
+	private ScanResult checkAndCreateAltResult(ScanResult result, List<String> altNumbers) {
+		if(!altNumbers.isEmpty()) {
+			if(altNumbers.size() > 1) {
+				return new ScanResult(result.getInputLines(), result.getAccountNumber(), 
+						formatAmbigiousMessage(result.getAccountNumber(), altNumbers));
+			} 
+			return new ScanResult(result.getInputLines(), altNumbers.get(0), null);
+		}
+		return result;
+	}
+	
+	private String formatAmbigiousMessage(String accNum, List<String> altNumbers) {
+		StringBuilder sb = new StringBuilder(accNum).append(" AMB [");
+		altNumbers.forEach(n -> sb.append("'").append(n).append("', "));
+		sb.delete(sb.length() - 2, sb.length());
+		sb.append("]");
+		return sb.toString();
+	}
+	
+	private List<Integer> getErrorDigist(String accNum) {
+		List<Integer> errorDigits = new ArrayList<>();
+		for(int i =0; i <numberOfDigits;i++) {
+			if(accNum.charAt(i) == (char)SevenSegmentFSM.ERROR_DIGIT) {
+				errorDigits.add(i);
+			}
+		}
+		return errorDigits;
+	}
+
 	/*
 	 * Scan the nth digit from seven segment strings.
 	 */
@@ -65,9 +153,9 @@ public class SevenSegmentScanner {
 	private ScanResult generateScanResult(List<String> lines, String accNum, boolean verify) {
 		String errMsg = null;
 		if(accNum.contains("?")) { 
-			errMsg = "ILL";
+			errMsg = ILLEGAL_NUM;
 		} else if(verify && !checksum(accNum)) {
-			errMsg = "ERR";
+			errMsg = ERROR_NUM;
 		}
 		return new ScanResult(lines, accNum, errMsg);
 	}
@@ -77,7 +165,7 @@ public class SevenSegmentScanner {
 	void verifyLine(String line) throws InvalidDataException {
 		if(line.length() != numberOfDigits * CHAR_PER_LINE) 
 			throw new InvalidDataException("Unexpected number of characters");
-		if(illegalCharPattern.matcher(line).find()) 
+		if(ILLEGAL_CHAR_PATTERN.matcher(line).find()) 
 			throw new InvalidDataException("Illegal characters");
 	}
 	
@@ -95,6 +183,33 @@ public class SevenSegmentScanner {
 			checksum += (digits.get(i) * (i + 1));
 		}
 		return checksum % 11 == 0;
+	}
+	
+	List<String> getAlternateDigits(List<String> lines, int nth) {
+		return getAlternateDigits(getDigitSegments(lines, nth));
+	}
+	
+	List<String> getAlternateDigits(List<Character> segments) {
+		List<SevenSegmentFSM> alternateFSMs = new ArrayList<>();
+		ssfsm.reset();
+		segments.forEach(c -> {
+			SevenSegmentFSM alt = dsmBuilder.copyOf(ssfsm);
+			if(c == ' ' ? alt.nextNonEmptyState() : alt.nextEmptyState()) {
+				alternateFSMs.add(alt);
+			}
+			ssfsm.nextState(c);
+		});
+		List<String> possibleDigits = new ArrayList<>();
+		if(!ssfsm.isError()) 
+			possibleDigits.add(ssfsm.getValue());
+		//transition all alternates and collect all possible results
+		alternateFSMs.forEach(sm -> {
+			for(int i = sm.transitionCount(); i < segments.size();i++)
+				sm.nextState(segments.get(i));
+			if(!sm.isError())
+				possibleDigits.add(sm.getValue());
+		});
+		return possibleDigits;
 	}
 	
 	public static class ScanResult {

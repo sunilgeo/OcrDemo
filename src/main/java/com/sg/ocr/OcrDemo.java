@@ -16,7 +16,7 @@ import com.sg.ocr.SevenSegmentScanner.ScanResult;
 public class OcrDemo {
 	private static final int SUPPORTED_DIGIT_COUNT = 9;
 	private SevenSegmentScanner scanner;
-	private static final Set<String> SUPPORTED_OPTIONS = new HashSet<>(Arrays.asList("-verify", "-detailed"));
+	private static final Set<String> SUPPORTED_OPTIONS = new HashSet<>(Arrays.asList("-verify", "-detailed", "-fix"));
 	
 	OcrDemo() {
 		init();
@@ -53,7 +53,7 @@ public class OcrDemo {
 				reader.readLine();
 				List<String> lines = Arrays.asList(line1, line2, line3);
 				verifyLines(lineNumber, lines);
-				results.add(scanner.scanLines(lines, options.contains("-verify")));
+				results.add(scanner.scanLines(lines, options.contains("-verify"), options.contains("-fix")));
 				lineNumber += 4;
 			}
 		}
@@ -113,4 +113,6 @@ public class OcrDemo {
 			System.exit(1);
 		}
 	}
+
+	
 }

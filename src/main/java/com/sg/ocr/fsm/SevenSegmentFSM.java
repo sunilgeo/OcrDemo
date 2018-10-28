@@ -61,6 +61,42 @@ public class SevenSegmentFSM {
 		}
 	}
 	
+	/**
+	 * Transform to next non empty state. This move is ideal for skipping missing input character.
+	 */
+	public boolean nextNonEmptyState() {
+		//pick a state to move to for any character other than space.
+		State nextState = null;
+		for(char segment : SUPPORTED_CHARACTERS) {
+			if(' ' != segment) {
+				nextState = currState.nextState(segment);
+				if(nextState != null) {
+					break;
+				}
+			}
+		}
+		if(nextState != null) {
+			transitions++;
+			currState = nextState;
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Transform to next empty state. This move is ideal for skipping incorrectly scanned  input character.
+	 */
+	public boolean nextEmptyState() {
+		//pick a state to move to for any character other than space.
+		State nextState = currState.nextState(' ');
+		if(nextState != null) {
+			transitions++;
+			currState = nextState;
+			return true;
+		}
+		return false;
+	}
+	
 	public int transitionCount() {
 		return transitions;
 	}
