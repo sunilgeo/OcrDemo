@@ -1,6 +1,8 @@
 package com.sg.ocr;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -66,6 +68,23 @@ public class SevenSegmentScannerTest {
 			scanner.verifyLine(line3);
 			scanner.verifyLine("Expected InvalidDataException when line contains less characters than required");
 		}catch (InvalidDataException e) {}
+	}
+	
+	@Test
+	public void testChecksum_withValidNumber() throws Exception {
+		SevenSegmentScanner scanner = new SevenSegmentScanner(9);
+		assertTrue(scanner.checksum("711111111"));
+		assertTrue(scanner.checksum("123456789"));
+		assertTrue(scanner.checksum("490867715"));
+		
+	}
+
+	@Test
+	public void testChecksum_withInValidNumber() throws Exception {
+		SevenSegmentScanner scanner = new SevenSegmentScanner(9);
+		assertFalse(scanner.checksum("888888888"));
+		assertFalse(scanner.checksum("490067715"));
+		assertFalse(scanner.checksum("012345678"));
 	}
 	
 	

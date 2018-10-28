@@ -1,8 +1,10 @@
 package com.sg.ocr;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.sg.ocr.fsm.FSMBuilder;
 import com.sg.ocr.fsm.SevenSegmentFSM;
@@ -70,7 +72,21 @@ public class SevenSegmentScanner {
 			throw new InvalidDataException("Illegal characters");
 	}
 	
-	
+	/*
+	 * Checksum to verify scanned numbers.
+	 * checksum is calculated as
+	 * ((1*d1) + (2*d2) + (3*d3) + ... + (9*d9)) % 11 == 0
+	 */
+	public boolean checksum(String number) {
+		List<Integer> digits = number.chars()
+				.mapToObj(c -> Character.getNumericValue(c)).collect(Collectors.toList());
+		Collections.reverse(digits);
+		int checksum = 0;
+		for(int i =0; i < digits.size(); i++) {
+			checksum += (digits.get(i) * (i + 1));
+		}
+		return checksum % 11 == 0;
+	}
 	
 	public static class ScanResult {
 		private final List<String> inputLines;
