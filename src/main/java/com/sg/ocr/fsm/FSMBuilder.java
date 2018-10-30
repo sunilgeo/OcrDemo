@@ -40,6 +40,9 @@ public class FSMBuilder {
 		lastState.addStateTransform(ssDigitCharacters.get(8), state);
 	}
 	
+	/*
+	 * Creates a state machine for scanning seven segment digits.
+	 */
 	public SevenSegmentFSM buildStateMachineForDigits() {
 		SevenSegmentFSM sssm = new SevenSegmentFSM();
 		for(int i =0; i < 10; i++) {
@@ -52,10 +55,13 @@ public class FSMBuilder {
 		return sssm.copy();
 	}
 	
-	public static List<Character> getSegmentsForDigit(int digit) {
+	static List<Character> getSegmentsForDigit(int digit) {
 		return DIGIT_LIST.get(digit);
 	}
 	
+	/*
+	 * Returns the seven segment version of the given digit.
+	 */
 	public static String getFormattedSegments(int digit) {
 		StringBuilder sb = new StringBuilder();
 		List<Character> segments = getSegmentsForDigit(digit);

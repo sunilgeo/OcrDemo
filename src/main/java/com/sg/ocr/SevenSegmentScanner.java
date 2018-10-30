@@ -91,7 +91,7 @@ public class SevenSegmentScanner {
 	 */
 	ScanResult tryFixingForIllegalDigits(ScanResult scanResult) {
 		String accNum = scanResult.getAccountNumber();
-		List<Integer> errorDigits = getErrorDigist(accNum);
+		List<Integer> errorDigits = getErrorDigits(accNum);
 		if(errorDigits.size() > 1) {
 			//only one error allowed.
 			return scanResult;
@@ -128,7 +128,10 @@ public class SevenSegmentScanner {
 		return sb.toString();
 	}
 	
-	private List<Integer> getErrorDigist(String accNum) {
+	/*
+	 * Returns the list of error digits in the given number.
+	 */
+	private List<Integer> getErrorDigits(String accNum) {
 		List<Integer> errorDigits = new ArrayList<>();
 		for(int i =0; i <numberOfDigits;i++) {
 			if(accNum.charAt(i) == (char)SevenSegmentFSM.ERROR_DIGIT) {

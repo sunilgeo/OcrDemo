@@ -13,10 +13,15 @@ import java.util.Set;
 
 import com.sg.ocr.SevenSegmentScanner.ScanResult;
 
+/*
+ * Main application for scanning input files and extracting 9 digit account numbers.
+ */
 public class OcrDemo {
+	//only 9 digit account numbers supported.
 	private static final int SUPPORTED_DIGIT_COUNT = 9;
-	private SevenSegmentScanner scanner;
 	private static final Set<String> SUPPORTED_OPTIONS = new HashSet<>(Arrays.asList("-verify", "-detailed", "-fix"));
+	
+	private SevenSegmentScanner scanner;
 	
 	OcrDemo() {
 		init();
@@ -26,6 +31,10 @@ public class OcrDemo {
 		scanner = new SevenSegmentScanner(SUPPORTED_DIGIT_COUNT);
 	}
 
+	/*
+	 * Checks each line that make up an account number and verify it
+	 * meet the criteria.
+	 */
 	void verifyLines(int lineStart, List<String> lines) {
 		for (int i = 0; i < 3; i++) {
 			try {
@@ -36,11 +45,17 @@ public class OcrDemo {
 		}
 	}
 
+	/*
+	 * Scan input file and generate results.
+	 */
 	public List<ScanResult> scanFile(String path,Set<String> options) throws IOException {
 		return scan(new FileReader(path),options);
 	}
 	
-	public List<ScanResult> scan(InputStreamReader inStreamReader,Set<String> options) throws IOException {
+	/*
+	 * Scan number from the input stream.
+	 */
+	List<ScanResult> scan(InputStreamReader inStreamReader,Set<String> options) throws IOException {
 		BufferedReader reader = new BufferedReader(inStreamReader);
 		List<ScanResult> results = new ArrayList<>();
 		String line1 = null;
@@ -75,6 +90,9 @@ public class OcrDemo {
 					Collections.emptySet();
     }
 	
+	/*
+	 * Verify command line parameters are as expected.
+	 */
 	private static boolean verifyParams(Set<String> params) {
 		for(String param : params) {
 			if(!SUPPORTED_OPTIONS.contains(param)) {
@@ -99,7 +117,6 @@ public class OcrDemo {
 			printUsage();
 			System.exit(0);
 		} 
-		
 		Set<String> params = parseParams(args);
 		if(!verifyParams(params)) {
 			printUsage();
